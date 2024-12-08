@@ -12,7 +12,7 @@
 
 
 
-<title>Leveraging publishing functions</title>
+<title>Publishing Analysis Artifacts</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -336,14 +336,176 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Leveraging publishing functions</h1>
+<h1 class="title toc-ignore">Publishing Analysis Artifacts</h1>
 
 
 
-<!--
-- [ ] Add vignette using publishing functions
--->
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(qtkit)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(qtkit)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code></pre></div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>The {qtkit} package provides several functions to help publish
+analysis artifacts in a standardized way:</p>
+<ul>
+<li><code>write_kbl()</code>: Save kable/kableExtra tables to files</li>
+<li><code>write_gg()</code>: Save ggplot2 plots to files</li>
+<li><code>write_obj()</code>: Save R objects to files</li>
+</ul>
+<p>These functions handle common tasks like:</p>
+<ul>
+<li>Automatic file naming based on code chunk labels</li>
+<li>Directory creation</li>
+<li>Multiple output formats</li>
+<li>Consistent styling and theming</li>
+</ul>
+</div>
+<div id="writing-tables" class="section level1">
+<h1>Writing Tables</h1>
+<div id="basic-table-export" class="section level2">
+<h2>Basic Table Export</h2>
+<p>Let’s create and save a simple table using
+<code>write_kbl()</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Create a basic table</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>mtcars_table <span class="ot">&lt;-</span> mtcars[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>] <span class="sc">|&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">format =</span> <span class="st">&quot;html&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="fu">kable_styling</span>(<span class="at">bootstrap_options =</span> <span class="st">&quot;striped&quot;</span>)</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co"># Save to file</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">write_kbl</span>(</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="at">kbl_obj =</span> mtcars_table,</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;mtcars_table&quot;</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="at">target_dir =</span> <span class="st">&quot;artifacts/&quot;</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  <span class="at">device =</span> <span class="st">&quot;png&quot;</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="customizing-table-output" class="section level2">
+<h2>Customizing Table Output</h2>
+<p>You can customize the output format and styling:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>mtcars_table <span class="ot">&lt;-</span> mtcars[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>] <span class="sc">|&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">format =</span> <span class="st">&quot;html&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="fu">kable_styling</span>(</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>    <span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">&quot;striped&quot;</span>, <span class="st">&quot;hover&quot;</span>),</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>    <span class="at">full_width =</span> <span class="cn">FALSE</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="fu">row_spec</span>(<span class="dv">0</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="fu">write_kbl</span>(</span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="at">kbl_obj =</span> mtcars_table,</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;mtcars_styled&quot;</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  <span class="at">target_dir =</span> <span class="st">&quot;artifacts/&quot;</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  <span class="at">device =</span> <span class="st">&quot;png&quot;</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  <span class="at">bs_theme =</span> <span class="st">&quot;flatly&quot;</span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+</div>
+<div id="writing-plots" class="section level1">
+<h1>Writing Plots</h1>
+<div id="basic-plot-export" class="section level2">
+<h2>Basic Plot Export</h2>
+<p>Save ggplot2 plots with <code>write_gg()</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Create a basic plot</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(mtcars, <span class="fu">aes</span>(wt, mpg)) <span class="sc">+</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co"># Save to file</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="fu">write_gg</span>(</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>  <span class="at">gg_obj =</span> p,</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;mtcars_plot&quot;</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>  <span class="at">target_dir =</span> <span class="st">&quot;artifacts/&quot;</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  <span class="at">device =</span> <span class="st">&quot;png&quot;</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="customizing-plot-output" class="section level2">
+<h2>Customizing Plot Output</h2>
+<p>Add custom themes and formatting:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(mtcars, <span class="fu">aes</span>(wt, mpg, <span class="at">color =</span> <span class="fu">factor</span>(cyl))) <span class="sc">+</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Car Weight vs Fuel Efficiency&quot;</span>,</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;Weight (1000 lbs)&quot;</span>,</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Miles per Gallon&quot;</span>,</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">&quot;Cylinders&quot;</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  )</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="fu">write_gg</span>(</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>  <span class="at">gg_obj =</span> p,</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;mtcars_plot_styled&quot;</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>  <span class="at">target_dir =</span> <span class="st">&quot;artifacts/&quot;</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>  <span class="at">device =</span> <span class="st">&quot;png&quot;</span>,</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>  <span class="at">width =</span> <span class="dv">8</span>,</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  <span class="at">height =</span> <span class="dv">6</span>,</span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>  <span class="at">dpi =</span> <span class="dv">300</span></span>
+<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+</div>
+<div id="writing-r-objects" class="section level1">
+<h1>Writing R Objects</h1>
+<div id="saving-data-objects" class="section level2">
+<h2>Saving Data Objects</h2>
+<p>Use <code>write_obj()</code> to save R objects for later use:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Create a filtered dataset</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>mtcars_subset <span class="ot">&lt;-</span> mtcars <span class="sc">|&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a>  <span class="fu">filter</span>(cyl <span class="sc">==</span> <span class="dv">4</span>) <span class="sc">|&gt;</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a>  <span class="fu">select</span>(mpg, wt, hp)</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co"># Save to file</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="fu">write_obj</span>(</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>  <span class="at">obj =</span> mtcars_subset,</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a>  <span class="at">file =</span> <span class="st">&quot;mtcars_4cyl&quot;</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>  <span class="at">target_dir =</span> <span class="st">&quot;artifacts/&quot;</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>)</span></code></pre></div>
+</div>
+<div id="reading-saved-artifacts" class="section level2">
+<h2>Reading Saved Artifacts</h2>
+<p>Tables and plots saved with {qtkit} can be easily restored from the
+directory where they have been saved (in this case
+<code>artifacts/</code>). For image formats, you can use the
+<code>knitr::include_graphics()</code> function, markdown, or HTML:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">include_graphics</span>(<span class="st">&quot;artifacts/mtcars_plot.png&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode md"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="al">![mtcars_plot](artifacts/mtcars_plot.png)</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">img</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;artifacts/mtcars_plot.png&quot;</span><span class="ot"> alt</span><span class="op">=</span><span class="st">&quot;mtcars_plot&quot;</span><span class="ot"> style</span><span class="op">=</span><span class="st">&quot;display: block; margin: auto;&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span></code></pre></div>
+<p>Objects can be read back using <code>dget()</code>:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co"># Read the saved object</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>restored_data <span class="ot">&lt;-</span> <span class="fu">dget</span>(<span class="st">&quot;artifacts/mtcars_4cyl&quot;</span>)</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co"># Check the restored object</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="fu">glimpse</span>(restored_data)</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co">#&gt; Rows: 11</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co">#&gt; Columns: 3</span></span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="co">#&gt; $ mpg &lt;dbl&gt; 22.8, 24.4, 22.8, 32.4, 30.4, 33.9, 21.5, 27.3, 26.0, 30.4, 21.4</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co">#&gt; $ wt  &lt;dbl&gt; 2.320, 3.190, 3.150, 2.200, 1.615, 1.835, 2.465, 1.935, 2.140, 1.5…</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt; $ hp  &lt;dbl&gt; 93, 62, 95, 66, 52, 65, 97, 66, 91, 113, 109</span></span></code></pre></div>
+<blockquote>
+<p><strong>Tip</strong> Note that tables and plots need not be saved
+with the <code>write_kbl()</code> and <code>write_gg()</code> functions
+to be restored. These objects can be saved and restored using the
+<code>write_obj()</code> and <code>dget()</code> function as well.</p>
+</blockquote>
+</div>
+</div>
+<div id="best-practices" class="section level1">
+<h1>Best Practices</h1>
+<ol style="list-style-type: decimal">
+<li>Use consistent naming conventions</li>
+<li>Create organized directory structures</li>
+<li>Document output formats and locations</li>
+<li>Include version control for outputs when appropriate</li>
+<li>Validate restored objects match originals</li>
+</ol>
+</div>
+<div id="additional-resources" class="section level1">
+<h1>Additional Resources</h1>
+<ul>
+<li>Package documentation: <code>help(package = &quot;qtkit&quot;)</code></li>
+<li>Related packages: {kableExtra}, {ggplot2}, {webshot2}</li>
+<li><a href="https://github.com/qtalr/qtkit">Project homepage</a></li>
+</ul>
+</div>
 
 
 

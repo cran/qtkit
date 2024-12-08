@@ -1,6 +1,6 @@
 Package: qtkit
 Title: Quantitative Text Kit
-Version: 1.0.0
+Version: 1.1.0
 Authors@R: 
     person("Jerid", "Francom", , "francojc@wfu.edu",
     role = c("aut", "cre", "cph"),
@@ -18,9 +18,10 @@ BugReports: https://github.com/qtalr/qtkit/issues
 SystemRequirements: Chromium-based browser (e.g., Chrome, Chromium, or
         Brave)
 Depends: R (>= 4.1)
-Imports: chromote, dplyr, ggplot2, glue, gutenbergr, kableExtra, knitr,
-        Matrix, openai, purrr, readr, rlang, stringr, tibble, tidytext
-Suggests: httptest, rmarkdown, testthat (>= 3.0.0), webshot2
+Imports: chromote, dplyr, ggplot2, gutenbergr, kableExtra, knitr,
+        Matrix, openai, rlang, xml2
+Suggests: httptest, rmarkdown, testthat (>= 3.0.0), webshot2, fs,
+        tibble, glue, readr
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
@@ -29,6 +30,6 @@ VignetteBuilder: knitr
 Author: Jerid Francom [aut, cre, cph] (<https://orcid.org/0000-0001-5972-6330>)
 Maintainer: Jerid Francom <francojc@wfu.edu>
 NeedsCompilation: no
-Packaged: 2024-08-17 16:56:39 UTC; francojc
+Packaged: 2024-12-07 23:46:19 UTC; francojc
 Repository: CRAN
-Date/Publication: 2024-08-17 17:10:02 UTC
+Date/Publication: 2024-12-08 00:10:02 UTC

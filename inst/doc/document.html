@@ -12,7 +12,7 @@
 
 
 
-<title>Documenting data and datasets</title>
+<title>Documenting Datasets</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -336,15 +336,164 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 
 
-<h1 class="title toc-ignore">Documenting data and datasets</h1>
+<h1 class="title toc-ignore">Documenting Datasets</h1>
 
 
 
-<!--
-
-- [ ] Add vignette using documentation functions
--->
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(qtkit)</span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(qtkit)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">library</span>(fs)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">library</span>(glue)</span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="fu">library</span>(readr)</span></code></pre></div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Proper dataset documentation is crucial for reproducible research and
+effective data sharing. The {qtkit} package provides two main functions
+to help standardize and automate the documentation process:</p>
+<ul>
+<li><code>create_data_origin()</code>: Creates standardized metadata
+about data(set) sources</li>
+<li><code>create_data_dictionary()</code>: Generates the scaffolding for
+a detailed variable-level documentation or can use AI to generate
+descriptions to be reviewed and updated as necessary</li>
+</ul>
+</div>
+<div id="creating-dataset-origin-documentation" class="section level1">
+<h1>Creating Dataset Origin Documentation</h1>
+<div id="basic-usage" class="section level2">
+<h2>Basic Usage</h2>
+<p>Let’s start with documenting the built-in <code>mtcars</code>
+dataset:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># Create a temporary file for our documentation</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>origin_file <span class="ot">&lt;-</span> <span class="fu">file_temp</span>(<span class="at">ext =</span> <span class="st">&quot;csv&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co"># Create the origin documentation template</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>origin_doc <span class="ot">&lt;-</span> <span class="fu">create_data_origin</span>(</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">file_path =</span> origin_file,</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="at">return =</span> <span class="cn">TRUE</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; Data origin file created at `file_path`.</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"># View the template</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>origin_doc <span class="sc">|&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co">#&gt; Rows: 8</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; Columns: 2</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; $ attribute   &lt;chr&gt; &quot;Resource name&quot;, &quot;Data source&quot;, &quot;Data sampling frame&quot;, &quot;Da…</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="co">#&gt; $ description &lt;chr&gt; &quot;The name of the resource.&quot;, &quot;URL, DOI, etc.&quot;, &quot;Language, …</span></span></code></pre></div>
+<p>The template provides fields for essential metadata. You can either
+open the CSV file in a spreadsheet editor or fill it out
+programmatically, as shown below.</p>
+<p>Here’s how you might fill it out for <code>mtcars</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>origin_doc <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">description =</span> <span class="fu">c</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>    <span class="st">&quot;Motor Trend Car Road Tests&quot;</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>    <span class="st">&quot;Henderson and Velleman (1981), Building multiple regression models interactively. Biometrics, 37, 391–411.&quot;</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>    <span class="st">&quot;US automobile market, passenger vehicles&quot;</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>    <span class="st">&quot;1973-74&quot;</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>    <span class="st">&quot;Built-in R dataset (.rda)&quot;</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a>    <span class="st">&quot;Single data frame with 32 observations of 11 variables&quot;</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a>    <span class="st">&quot;Public Domain&quot;</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a>    <span class="st">&quot;Citation: Henderson and Velleman (1981)&quot;</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a>  )) <span class="sc">|&gt;</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a>  <span class="fu">write_csv</span>(origin_file)</span></code></pre></div>
+</div>
+<div id="customizing-origin-documentation" class="section level2">
+<h2>Customizing Origin Documentation</h2>
+<p>You can force overwrite existing documentation:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">create_data_origin</span>(</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>  <span class="at">file_path =</span> origin_file,</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>  <span class="at">force =</span> <span class="cn">TRUE</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>)</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; Data origin file created at `file_path`.</span></span></code></pre></div>
+</div>
+</div>
+<div id="creating-data-dictionaries" class="section level1">
+<h1>Creating Data Dictionaries</h1>
+<div id="basic-dictionary-creation" class="section level2">
+<h2>Basic Dictionary Creation</h2>
+<p>Create a basic data dictionary without AI assistance:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co"># Create a temporary file for our dictionary</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>dict_file <span class="ot">&lt;-</span> <span class="fu">file_temp</span>(<span class="at">ext =</span> <span class="st">&quot;csv&quot;</span>)</span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co"># Generate dictionary for iris dataset</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a>iris_dict <span class="ot">&lt;-</span> <span class="fu">create_data_dictionary</span>(</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>  <span class="at">data =</span> iris,</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a>  <span class="at">file_path =</span> dict_file</span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>)</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co"># View the results</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>iris_dict <span class="sc">|&gt;</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; Rows: 5</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; Columns: 4</span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt; $ variable    &lt;chr&gt; &quot;Sepal.Length&quot;, &quot;Sepal.Width&quot;, &quot;Petal.Length&quot;, &quot;Petal.Widt…</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt; $ name        &lt;chr&gt; NA, NA, NA, NA, NA</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt; $ type        &lt;chr&gt; &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;, &quot;numeric&quot;, &quot;factor&quot;</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; $ description &lt;chr&gt; NA, NA, NA, NA, NA</span></span></code></pre></div>
+</div>
+<div id="ai-enhanced-data-dictionaries" class="section level2">
+<h2>AI-Enhanced Data Dictionaries</h2>
+<p>If you have an OpenAI API key, you can generate more detailed
+descriptions:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># Not run - requires API key</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="fu">Sys.setenv</span>(<span class="at">OPENAI_API_KEY =</span> <span class="st">&quot;your-api-key&quot;</span>)</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>iris_dict_ai <span class="ot">&lt;-</span> <span class="fu">create_data_dictionary</span>(</span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a>  <span class="at">data =</span> iris,</span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a>  <span class="at">file_path =</span> dict_file,</span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a>  <span class="at">model =</span> <span class="st">&quot;gpt-4&quot;</span>,</span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a>  <span class="at">sample_n =</span> <span class="dv">5</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>)</span></code></pre></div>
+<p>Example output might look like:</p>
+<pre><code>#&gt; # A tibble: 2 × 4
+#&gt;   variable     name         type    description                       
+#&gt;   &lt;chr&gt;        &lt;chr&gt;        &lt;chr&gt;   &lt;chr&gt;                             
+#&gt; 1 Sepal.Length Sepal Length numeric Length of the sepal in centimeters
+#&gt; 2 Sepal.Width  Sepal Width  numeric Width of the sepal in centimeters</code></pre>
+</div>
+<div id="working-with-larger-datasets" class="section level2">
+<h2>Working with Larger Datasets</h2>
+<p>For larger datasets, you can use sampling and grouping:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>diamonds_dict <span class="ot">&lt;-</span> diamonds <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="fu">create_data_dictionary</span>(</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>    <span class="at">file_path =</span> <span class="st">&quot;diamonds_dict.csv&quot;</span>,</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>    <span class="at">model =</span> <span class="st">&quot;gpt-4&quot;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a>    <span class="at">sample_n =</span> <span class="dv">3</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>    <span class="at">grouping =</span> <span class="st">&quot;cut&quot;</span> <span class="co"># Sample across different cut categories</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>  )</span></code></pre></div>
+</div>
+<div id="best-practices" class="section level2">
+<h2>Best Practices</h2>
+<ol style="list-style-type: decimal">
+<li>Create documentation when first obtaining/creating a dataset</li>
+<li>Update documentation when:
+<ul>
+<li>Adding new variables</li>
+<li>Modifying data structure</li>
+<li>Changing data sources</li>
+</ul></li>
+<li>Store documentation alongside data in version control</li>
+<li>Include documentation paths in your project README</li>
+</ol>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>The {qtkit} package provides flexible tools for standardizing dataset
+documentation. By combining <code>create_data_origin()</code> and
+<code>create_data_dictionary()</code>, you can create comprehensive
+documentation that enhances reproducibility and data sharing.</p>
+<div id="additional-resources" class="section level2">
+<h2>Additional Resources</h2>
+<ul>
+<li>Package documentation: <code>help(package = &quot;qtkit&quot;)</code></li>
+<li>Related packages: {dataMaid}, {codebook}</li>
+<li><a href="https://github.com/qtalr/qtkit">Project homepage</a></li>
+</ul>
+</div>
+</div>
 
 
 
