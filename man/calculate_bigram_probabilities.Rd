@@ -26,8 +26,9 @@ A data frame containing:
 }
 }
 \description{
-Helper function that calculates joint and marginal probabilities for bigrams
-in the input data. It processes the data to create bigrams and computes
-their probabilities along with individual token probabilities.
+Helper function that calculates joint and marginal probabilities for
+bigrams in the input data using dplyr. It processes the data to create
+bigrams and computes their probabilities along with individual token
+probabilities.
 }
 \keyword{internal}

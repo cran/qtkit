@@ -46,7 +46,6 @@ create_data_dictionary <-
       return(message("File already exists at `file_path`.
                       Use `force = TRUE` to overwrite."))
     }
-
     # Check to see if `model` is NULL. If so, create dictionary scaffolding.
     # If not, check to see if `model` is one of the available models
     if (is.null(model)) {
@@ -64,24 +63,26 @@ create_data_dictionary <-
         stop("`model` must be one of the available chat completion models.
              See `openai::list_models()`.")
       }
-
       # Check to see if OPENAI_API_KEY is set
       if (is.na(Sys.getenv()["OPENAI_API_KEY"])) {
         stop("Set your OPENAI_API_KEY environment variable.")
       }
-
       # Set the instructions for the prompt
       prompt_instructions <- "
-      I have a dataset I would like you to create a data dictionary for.
-      The information I want is the `variable`, `name` (human readable),
-      `type` (one of 'categorical', 'ordinal' or 'numeric'), and `description`.
-      Here's a small sample of the data for you to work with. In some cases
-      some variables in the dataset may be null. In these cases use the
-      variable name to predict the other information. Please return your data
-      dictionary in raw CSV format. Remember to enclose text in quotes and only
-      return the formatted data, no explanations.
+      Create a data dictionary in raw CSV format for this dataset.
+      Return ONLY the CSV data with these columns:
+      - variable: exact column name from data
+      - name: human readable name
+      - type: one of 'categorical', 'ordinal' or 'numeric'
+      - description: clear description of the variable and the values it
+        can take
+      Important:
+      - Enclose text values, e.g. values for 'description', in quotes to
+        avoid misparsing of commas
+      - Return ONLY the CSV data with no explanations or code blocks
+        before or after the CSV data
+      - Use variable names to infer info for null columns
       "
-
       # Get a the first 5 rows of the data frame
       data_sample <-
         data |>
@@ -94,17 +95,14 @@ create_data_dictionary <-
           is.character,
           function(x) substr(x, 1, 47) |> paste0("...")
         )
-
       # Convert the data sample to R code as a string
       prompt_data <-
         data_sample |>
         dput() |> # convert to R code
         utils::capture.output() |> # capture the output
         paste(collapse = " ") # collapse the output into a single string
-
       # Combine the instructions and the data sample into a single string
       prompt <- sprintf("%s\n\n%s", prompt_instructions, prompt_data)
-
       # Use openai to generate the descriptions for each of the variables in
       # the `data_sample` data frame.
       response <-
@@ -113,19 +111,40 @@ create_data_dictionary <-
           messages = list(list("role" = "user", "content" = prompt)),
           max_tokens = 500
         )
-
       # Create a data frame with the variable names, human-readable names,
       # and descriptions
-      data_dict <-
-        response$choices["message.content"] |> # get the response from the API
-        as.character() |> # convert to a character vector
-        textConnection() |> # create text connection
-        utils::read.csv(stringsAsFactors = FALSE) |> # read the data dictionary as a data frame
-        suppressMessages() # suppress messages
+      result <- tryCatch(
+        {
+          parsed_dict <- response$choices["message.content"] |>
+            as.character() |>
+            textConnection() |>
+            utils::read.csv(stringsAsFactors = FALSE) |>
+            suppressMessages() # suppress messages
+          list(success = TRUE, data = parsed_dict)
+        },
+        error = function(e) {
+          warning("Failed to parse API response: ", e$message)
+          list(success = FALSE, error = e$message)
+        }
+      )
+      # If parsing failed, create a basic dictionary
+      data_dict <- if (result$success) {
+        result$data
+      } else {
+        warning("Falling back to basic dictionary structure.
+          You can run the call again or you may need to manually edit
+          the data dictionary.")
+        data.frame(
+          variable = names(data),
+          name = NA_character_,
+          type = sapply(data, class, USE.NAMES = FALSE),
+          description = NA_character_,
+          stringsAsFactors = FALSE
+        )
+      }
     }
     # Write the data dictionary to a file
     write.csv(data_dict, file = file_path, row.names = FALSE)
-
     # Return the data dictionary
     return(data_dict)
   }

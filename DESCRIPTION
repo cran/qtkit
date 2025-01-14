@@ -1,6 +1,6 @@
 Package: qtkit
 Title: Quantitative Text Kit
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: 
     person("Jerid", "Francom", , "francojc@wfu.edu",
     role = c("aut", "cre", "cph"),
@@ -30,6 +30,6 @@ VignetteBuilder: knitr
 Author: Jerid Francom [aut, cre, cph] (<https://orcid.org/0000-0001-5972-6330>)
 Maintainer: Jerid Francom <francojc@wfu.edu>
 NeedsCompilation: no
-Packaged: 2024-12-07 23:46:19 UTC; francojc
+Packaged: 2025-01-14 04:29:08 UTC; francojc
 Repository: CRAN
-Date/Publication: 2024-12-08 00:10:02 UTC
+Date/Publication: 2025-01-14 06:50:02 UTC
